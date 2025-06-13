@@ -26,8 +26,8 @@ async function getVideoUrl(url: string): Promise<string> {
   return downloadUrl;
 }
 
-const url = "https://v.douyin.com/JyCk5gy";
-const downloadUrl = await getVideoUrl(url);
-console.log(downloadUrl);
+//const url = "https://v.douyin.com/JyCk5gy";
+//const downloadUrl = await getVideoUrl(url);
+//console.log(downloadUrl);
 
 export { getVideoUrl };
