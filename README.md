@@ -31,6 +31,7 @@
   ```bash
   denoflare push cfworker.ts
   ```
+- 部署后到worker设置开启访问即可
 
 - 参考文档：[Cloudflare Workers 教程](https://docs.deno.com/examples/cloudflare_workers_tutorial/)
 
