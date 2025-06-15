@@ -21,7 +21,7 @@
 
 ### 1. Deno Deploy 部署
 - 进入 [Deno Deploy](https://dash.deno.com/) 控制台。
-- 创建新项目，选择可执行文件为 [main.ts](./douyin.ts)。
+- 创建新项目，选择可执行文件为 [main.ts](./main.ts)。
 - 部署后即可通过 HTTPS 访问服务。
 
 ### 2. Cloudflare Workers 部署
