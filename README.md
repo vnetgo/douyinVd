@@ -39,3 +39,7 @@
 - 直接点击deploy即可部署
 - 访问链接为 https://yourdomain.vercel.app/api/hello?url=https://v.douyin.com/xxxx/
 
+## 📈 Stars 趋势
+
+[![Star History Chart](https://api.star-history.com/svg?repos=pwh-pwh/douyinVd&type=Date)](https://star-history.com/#pwh-pwh/douyinVd&Date)
+
