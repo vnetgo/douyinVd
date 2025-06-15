@@ -21,7 +21,7 @@
 
 ### 1. Deno Deploy 部署
 - 进入 [Deno Deploy](https://dash.deno.com/) 控制台。
-- 创建新项目，选择可执行文件为 [main.ts](file:///Users/pwhcoder/WebstormProjects/douyinVd/douyin.ts)。
+- 创建新项目，选择可执行文件为 [main.ts](./douyin.ts)。
 - 部署后即可通过 HTTPS 访问服务。
 
 ### 2. Cloudflare Workers 部署
@@ -32,6 +32,10 @@
   denoflare push cfworker.ts
   ```
 - 部署后到worker设置开启访问即可
-
 - 参考文档：[Cloudflare Workers 教程](https://docs.deno.com/examples/cloudflare_workers_tutorial/)
+
+### 3. vercel 部署
+- fork 本项目后，进入vercel dashboard导入项目
+- 直接点击deploy即可部署
+- 访问链接为 https://yourdomain.vercel.app/api/hello?url=https://v.douyin.com/xxxx/
 
