@@ -28,8 +28,10 @@ const handler = async (req:Request) => {
             // 或者，如果API直接返回视频流并且客户端JS处理下载，则保持原样
             // 这里我们先尝试直接返回视频URL，前端JS会处理跳转
             // 如果要直接下载，可以设置 Content-Disposition header
-            // 直接重定向到视频URL，让浏览器处理下载或播放
-            return Response.redirect(videoUrl, 302);
+            // 返回视频URL为JSON，由前端处理预览和下载
+            return new Response(JSON.stringify({ videoUrl }), {
+                headers: { "Content-Type": "application/json" },
+            });
         } catch (error) {
             console.error("Error getting video URL:", error);
             return new Response("获取视频链接失败: " + error.message, { status: 500 });

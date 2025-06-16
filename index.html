@@ -69,26 +69,41 @@
         <h1>抖音视频无水印下载</h1>
         <form id="downloadForm">
             <input type="url" id="douyinUrl" placeholder="请输入抖音视频链接" required>
-            <button type="submit">下载视频</button>
+            <button type="submit" id="submitButton">获取视频</button>
         </form>
         <p id="errorMessage" class="error-message"></p>
-        <a id="downloadLink" class="download-link" href="#" style="display:none;">点击下载</a>
+        <div id="videoPreviewContainer" style="margin-top: 20px; display: none;">
+            <video id="videoPlayer" width="320" height="240" controls>
+                您的浏览器不支持视频标签。
+            </video>
+            <br>
+            <a id="downloadButton" class="download-link" href="#" download="douyin_video.mp4" style="display: none; margin-top:10px;">下载视频</a>
+        </div>
     </div>
 
     <script>
-        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+        document.getElementById('downloadForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const douyinUrlInput = document.getElementById('douyinUrl');
             const errorMessageElement = document.getElementById('errorMessage');
-            const downloadLink = document.getElementById('downloadLink');
+            const videoPreviewContainer = document.getElementById('videoPreviewContainer');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const downloadButton = document.getElementById('downloadButton');
+            const submitButton = document.getElementById('submitButton');
             const url = douyinUrlInput.value.trim();
 
             errorMessageElement.textContent = '';
-            downloadLink.style.display = 'none';
-            downloadLink.href = '#';
+            videoPreviewContainer.style.display = 'none';
+            videoPlayer.src = '';
+            downloadButton.style.display = 'none';
+            downloadButton.href = '#';
+            submitButton.disabled = true;
+            submitButton.textContent = '处理中...';
 
             if (!url) {
                 errorMessageElement.textContent = '请输入抖音视频链接。';
+                submitButton.disabled = false;
+                submitButton.textContent = '获取视频';
                 return;
             }
 
@@ -96,24 +111,35 @@
                 new URL(url);
             } catch (_) {
                 errorMessageElement.textContent = '请输入有效的URL。';
+                submitButton.disabled = false;
+                submitButton.textContent = '获取视频';
                 return;
             }
 
-            // 构建下载链接，假设API在 /api/hello?url=
-            // 如果部署在deno.dev，路径可能是 /api/hello?url=... 或者直接 /?url=... 
-            // 根据实际的API路径调整
-            // 对于 deno.dev 部署，通常根路径的 worker 就能处理，或者特定路径的 worker
-            // 根据 serve.ts 的逻辑，API 路径是根路径带上查询参数
-            const downloadApiUrl = `/?url=${encodeURIComponent(url)}`;
-            
-            // 尝试直接通过a标签下载，如果浏览器支持且服务器设置了Content-Disposition
-            // downloadLink.href = downloadApiUrl;
-            // downloadLink.download = 'douyin_video.mp4'; // 建议的文件名
-            // downloadLink.textContent = '视频准备就绪，点击下载';
-            // downloadLink.style.display = 'block';
+            const apiUrl = `/?url=${encodeURIComponent(url)}`;
 
-            // 或者直接跳转到API进行下载
-            window.location.href = downloadApiUrl;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`获取视频失败: ${response.status} ${errorText || response.statusText}`);
+                }
+                const data = await response.json();
+                if (data.videoUrl) {
+                    videoPlayer.src = data.videoUrl;
+                    downloadButton.href = data.videoUrl;
+                    videoPreviewContainer.style.display = 'block';
+                    downloadButton.style.display = 'inline-block'; // 或者 'block' 根据布局需要
+                } else {
+                    throw new Error('未能从服务器获取视频链接。');
+                }
+            } catch (error) {
+                console.error('获取视频时出错:', error);
+                errorMessageElement.textContent = error.message || '获取视频时发生未知错误。';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = '获取视频';
+            }
         });
     </script>
 </body>
