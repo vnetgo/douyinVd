@@ -34,12 +34,18 @@ const handler = async (req:Request) => {
             });
         } catch (error) {
             console.error("Error getting video URL:", error);
-            return new Response("获取视频链接失败: " + error.message, { status: 500 });
+            return new Response(JSON.stringify({ error: "获取视频链接失败: " + error.message }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+            });
         }
     } 
 
-    // 对于其他路径或没有url参数的请求，可以返回一个更友好的提示或404
-    return new Response("无效的请求。请访问首页或提供有效的视频URL参数。", { status: 404 });
+    // 对于其他路径或没有url参数的请求，返回JSON格式的404错误
+    return new Response(JSON.stringify({ error: "无效的请求。请访问首页或提供有效的视频URL参数。" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+    });
 }
 
 export {handler}

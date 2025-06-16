@@ -120,18 +120,24 @@
 
             try {
                 const response = await fetch(apiUrl);
+                const data = await response.json(); // 尝试解析JSON
+
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`获取视频失败: ${response.status} ${errorText || response.statusText}`);
+                    // 如果响应状态不是ok，优先使用data中的error字段，否则构造通用错误
+                    const errorMessage = data && data.error ? data.error : `获取视频失败: ${response.status} ${response.statusText}`;
+                    throw new Error(errorMessage);
                 }
-                const data = await response.json();
+
                 if (data.videoUrl) {
                     videoPlayer.src = data.videoUrl;
                     downloadButton.href = data.videoUrl;
                     videoPreviewContainer.style.display = 'block';
                     downloadButton.style.display = 'inline-block'; // 或者 'block' 根据布局需要
+                } else if (data.error) {
+                    // 如果响应成功但返回的JSON包含error字段
+                    throw new Error(data.error);
                 } else {
-                    throw new Error('未能从服务器获取视频链接。');
+                    throw new Error('未能从服务器获取有效的视频链接或错误信息。');
                 }
             } catch (error) {
                 console.error('获取视频时出错:', error);
