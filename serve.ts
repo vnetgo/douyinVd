@@ -5,30 +5,12 @@ const handler = async (req:Request) => {
 
     const url = new URL(req.url);
 
-    // 如果是根路径请求，返回HTML页面
-    if (url.pathname === "/") {
-        try {
-            const htmlContent = await Deno.readTextFile("./index.html");
-            return new Response(htmlContent, {
-                headers: { "Content-Type": "text/html; charset=utf-8" },
-            });
-        } catch (error) {
-            console.error("Error reading index.html:", error);
-            return new Response("无法加载页面", { status: 500 });
-        }
-    }
-
-    // 处理视频下载请求
+    // 优先处理视频下载请求 (API call)
     if (url.searchParams.has("url")) {
         const inputUrl = url.searchParams.get("url")!;
-        console.log("inputUrl:", inputUrl);
+        console.log("API Call - inputUrl:", inputUrl);
         try {
             const videoUrl = await getVideoUrl(inputUrl);
-            // 为了触发浏览器下载，而不是直接在页面显示内容，可以考虑重定向
-            // 或者，如果API直接返回视频流并且客户端JS处理下载，则保持原样
-            // 这里我们先尝试直接返回视频URL，前端JS会处理跳转
-            // 如果要直接下载，可以设置 Content-Disposition header
-            // 返回视频URL为JSON，由前端处理预览和下载
             return new Response(JSON.stringify({ videoUrl }), {
                 headers: { "Content-Type": "application/json" },
             });
@@ -39,10 +21,27 @@ const handler = async (req:Request) => {
                 headers: { "Content-Type": "application/json" },
             });
         }
-    } 
+    }
 
-    // 对于其他路径或没有url参数的请求，返回JSON格式的404错误
-    return new Response(JSON.stringify({ error: "无效的请求。请访问首页或提供有效的视频URL参数。" }), {
+    // 如果没有url参数，再检查是否为根路径请求，返回HTML页面
+    if (url.pathname === "/") {
+        try {
+            const htmlContent = await Deno.readTextFile("./index.html");
+            return new Response(htmlContent, {
+                headers: { "Content-Type": "text/html; charset=utf-8" },
+            });
+        } catch (error) {
+            console.error("Error reading index.html:", error);
+            // 确保此处的错误也返回JSON
+            return new Response(JSON.stringify({ error: "无法加载页面: " + error.message }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+    }
+
+    // 对于其他未匹配的路径，返回JSON格式的404错误
+    return new Response(JSON.stringify({ error: "请求的资源未找到。" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
     });
