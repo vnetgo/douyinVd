@@ -26,7 +26,16 @@ async function getVideoUrl(url: string): Promise<string> {
 
   // Try to follow redirects to get the actual video URL
   try {
-    const resp = await fetch(downloadUrl, { method: "GET", redirect: "manual" }); // Important: redirect: "manual"
+    const headers = new Headers();
+    headers.set(
+      "User-Agent",
+      "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36",
+    );
+    // Adding a Referer, as this is often checked by video servers
+    // The initial URL (the one shared by the user) can be a good candidate for Referer
+    headers.set("Referer", url); 
+
+    const resp = await fetch(downloadUrl, { method: "GET", headers: headers, redirect: "manual" }); // Important: redirect: "manual"
     if (resp.status === 302) {
       const location = resp.headers.get("Location");
       if (location) {
