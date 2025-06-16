@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抖音视频下载</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input[type="url"] {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .download-link {
+            display: block;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .download-link:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>抖音视频无水印下载</h1>
+        <form id="downloadForm">
+            <input type="url" id="douyinUrl" placeholder="请输入抖音视频链接" required>
+            <button type="submit">下载视频</button>
+        </form>
+        <p id="errorMessage" class="error-message"></p>
+        <a id="downloadLink" class="download-link" href="#" style="display:none;">点击下载</a>
+    </div>
+
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const douyinUrlInput = document.getElementById('douyinUrl');
+            const errorMessageElement = document.getElementById('errorMessage');
+            const downloadLink = document.getElementById('downloadLink');
+            const url = douyinUrlInput.value.trim();
+
+            errorMessageElement.textContent = '';
+            downloadLink.style.display = 'none';
+            downloadLink.href = '#';
+
+            if (!url) {
+                errorMessageElement.textContent = '请输入抖音视频链接。';
+                return;
+            }
+
+            try {
+                new URL(url);
+            } catch (_) {
+                errorMessageElement.textContent = '请输入有效的URL。';
+                return;
+            }
+
+            // 构建下载链接，假设API在 /api/hello?url=
+            // 如果部署在deno.dev，路径可能是 /api/hello?url=... 或者直接 /?url=... 
+            // 根据实际的API路径调整
+            // 对于 deno.dev 部署，通常根路径的 worker 就能处理，或者特定路径的 worker
+            // 根据 serve.ts 的逻辑，API 路径是根路径带上查询参数
+            const downloadApiUrl = `/?url=${encodeURIComponent(url)}`;
+            
+            // 尝试直接通过a标签下载，如果浏览器支持且服务器设置了Content-Disposition
+            // downloadLink.href = downloadApiUrl;
+            // downloadLink.download = 'douyin_video.mp4'; // 建议的文件名
+            // downloadLink.textContent = '视频准备就绪，点击下载';
+            // downloadLink.style.display = 'block';
+
+            // 或者直接跳转到API进行下载
+            window.location.href = downloadApiUrl;
+        });
+    </script>
+</body>
+</html>
