@@ -22,7 +22,29 @@ async function getVideoId(url: string): Promise<string> {
 
 async function getVideoUrl(url: string): Promise<string> {
   const id = await getVideoId(url);
-  const downloadUrl = cVUrl.replace("%s", id);
+  let downloadUrl = cVUrl.replace("%s", id);
+
+  // Try to follow redirects to get the actual video URL
+  try {
+    const resp = await fetch(downloadUrl, { method: "GET", redirect: "manual" }); // Important: redirect: "manual"
+    if (resp.status === 302) {
+      const location = resp.headers.get("Location");
+      if (location) {
+        console.log("Redirected to:", location);
+        downloadUrl = location; // Use the redirected URL
+      } else {
+        console.warn("Got 302 but no Location header for:", downloadUrl);
+      }
+    } else {
+      console.log(`Initial request to ${downloadUrl} status: ${resp.status}. Body will not be consumed here.`);
+      // If not a redirect, we assume (for now) this URL might work or needs further client-side handling.
+      // Or, we might need to parse resp.text() if it contains the video URL in a different format.
+    }
+  } catch (e) {
+    console.error("Error trying to follow redirect for video URL:", e);
+    // Fallback to the initially constructed URL if fetching/redirect fails
+  }
+
   return downloadUrl;
 }
 
