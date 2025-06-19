@@ -2,6 +2,53 @@ const pattern = /"video":{"play_addr":{"uri":"([a-z0-9]+)"/;
 const cVUrl =
   "https://www.iesdouyin.com/aweme/v1/play/?video_id=%s&ratio=1080p&line=0";
 
+const statsRegex = /"statistics"\s*:\s*\{([\s\S]*?)\},/;
+
+// 使用正则表达式匹配 nickname 和 signature
+const regex = /"nickname":\s*"([^"]+)",\s*"signature":\s*"([^"]+)"/;
+const ctRegex = /"create_time":\s*(\d+)/;
+const descRegex = /"desc":\s*"([^"]+)"/;
+
+interface DouyinVideoInfo {
+  // ID
+  aweme_id: string | null;
+  // 评论数
+  comment_count: number | null;
+  // 点赞数
+  digg_count: number | null;
+  // 分享数
+  share_count: number | null;
+  // 收藏数
+  collect_count: number | null;
+  // 作者昵称
+  nickname: string | null;
+  // 作者签名
+  signature: string | null;
+  // 标题
+  desc: string | null;
+  // 创建时间
+  create_time: string | null;
+  // 视频链接
+  video_url: string | null;
+  // 类型
+  type: string | null;
+  // 图片链接列表
+  image_url_list: string[] | null;
+}
+
+// 定义格式化函数
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+  const day = String(date.getDate()).padStart(2, '0');
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 async function doGet(url: string): Promise<Response> {
   const headers = new Headers();
   headers.set(
@@ -10,6 +57,61 @@ async function doGet(url: string): Promise<Response> {
   );
   const resp = await fetch(url, { method: "GET", headers });
   return resp;
+}
+
+async function getVideoInfo(url: string): Promise<DouyinVideoInfo> {
+  const resp = await doGet(url);
+  const body = await resp.text();
+  const match = pattern.exec(body);
+  if (!match || !match[1]) throw new Error("Video ID not found in URL");
+  const video_url = cVUrl.replace("%s", match[1]);
+  const auMatch = body.match(regex);
+  const ctMatch = body.match(ctRegex);
+  const descMatch = body.match(descRegex);
+  const statsMatch = body.match(statsRegex);
+  if (statsMatch) {
+    const innerContent = statsMatch[0]; // 整个匹配结果
+
+    // 提取具体字段值
+    const awemeIdMatch = innerContent.match(/"aweme_id"\s*:\s*"([^"]+)"/);
+    const commentCountMatch = innerContent.match(/"comment_count"\s*:\s*(\d+)/);
+    const diggCountMatch = innerContent.match(/"digg_count"\s*:\s*(\d+)/);
+    const playCountMatch = innerContent.match(/"play_count"\s*:\s*(\d+)/);
+    const shareCountMatch = innerContent.match(/"share_count"\s*:\s*(\d+)/);
+    const collectCountMatch = innerContent.match(/"collect_count"\s*:\s*(\d+)/);
+    const douyinVideoInfo: DouyinVideoInfo = {
+      aweme_id: awemeIdMatch ? awemeIdMatch[1] : null,
+      comment_count: commentCountMatch ? parseInt(commentCountMatch[1]) : null,
+      digg_count: diggCountMatch ? parseInt(diggCountMatch[1]) : null,
+      share_count: shareCountMatch ? parseInt(shareCountMatch[1]) : null,
+      collect_count: collectCountMatch ? parseInt(collectCountMatch[1]) : null,
+      nickname: null,
+      signature: null,
+      desc: null,
+      create_time: null,
+      video_url: video_url,
+      type: "video",
+      image_url_list: null
+    };
+
+    if (auMatch) {
+      douyinVideoInfo.nickname = auMatch[1];
+      douyinVideoInfo.signature = auMatch[2];
+    }
+
+    if (ctMatch) {
+      const date = new Date(parseInt(ctMatch[1]) * 1000);
+      douyinVideoInfo.create_time = formatDate(date);
+
+    }
+    if (descMatch) {
+      douyinVideoInfo.desc = descMatch[1];
+    }
+    console.log(douyinVideoInfo);
+    return douyinVideoInfo;
+  } else {
+    throw new Error("No stats found in the response.");
+  }
 }
 
 async function getVideoId(url: string): Promise<string> {
@@ -26,8 +128,8 @@ async function getVideoUrl(url: string): Promise<string> {
   return downloadUrl;
 }
 
-//const url = "https://v.douyin.com/JyCk5gy";
-//const downloadUrl = await getVideoUrl(url);
-//console.log(downloadUrl);
+// const url = "https://v.douyin.com/JyCk5gy";
+// const downloadUrl = await getVideoInfo(url);
+// console.log(downloadUrl);
 
-export { getVideoUrl };
+export { getVideoUrl,getVideoInfo };

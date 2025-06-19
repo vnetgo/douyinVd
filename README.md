@@ -9,9 +9,44 @@
 - **地址**：`https://yourdomain?url=https://v.douyin.com/xxxx/`
 - **参数说明**：
     - `url`: 抖音视频分享链接
+    - `data`: 启用json数据返回，请求链接如下 https://yourdomain?data&url=https://v.douyin.com/xxxx
+  
 
 ### 📤 返回结果
-返回解析后的无水印视频直链（URL）。
+1. 无data参数
+> 返回解析后的无水印视频直链（URL）。
+
+2. 有data参数
+
+返回json数据结构如下
+```ts
+interface DouyinVideoInfo {
+// ID
+aweme_id: string | null;
+// 评论数
+comment_count: number | null;
+// 点赞数
+digg_count: number | null;
+// 分享数
+share_count: number | null;
+// 收藏数
+collect_count: number | null;
+// 作者昵称
+nickname: string | null;
+// 作者签名
+signature: string | null;
+// 标题
+desc: string | null;
+// 创建时间
+create_time: string | null;
+// 视频链接
+video_url: string | null;
+// 类型
+type: string | null;
+// 图片链接列表
+image_url_list: string[] | null;
+}
+```
 
 ---
 
