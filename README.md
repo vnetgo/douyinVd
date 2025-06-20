@@ -74,6 +74,11 @@ image_url_list: string[] | null;
 - 直接点击deploy即可部署
 - 访问链接为 https://yourdomain.vercel.app/api/hello?url=https://v.douyin.com/xxxx/
 
+### 4. docker 部署
+- clone 本项目到服务器
+- 构建docker镜像 `docker build -t my-deno-app .`
+- 运行容器 `docker run -p 8000:8000 my-deno-app`
+
 ## 📈 Stars 趋势
 
 [![Star History Chart](https://api.star-history.com/svg?repos=pwh-pwh/douyinVd&type=Date)](https://star-history.com/#pwh-pwh/douyinVd&Date)
