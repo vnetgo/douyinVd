@@ -68,6 +68,7 @@ image_url_list: string[] | null;
   ```
 - 部署后到worker设置开启访问即可
 - 参考文档：[Cloudflare Workers 教程](https://docs.deno.com/examples/cloudflare_workers_tutorial/)
+- 如果怕麻烦或者出现其他错误，可以直接使用 [cfbuild.js](./cfbuild.js) 文件，这个是编译后的文件，可以直接部署cf worker
 
 ### 3. vercel 部署
 - fork 本项目后，进入vercel dashboard导入项目
