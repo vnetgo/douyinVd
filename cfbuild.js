@@ -1,4 +1,4 @@
-// home/pwh/jspj/douyinVd/douyin.ts
+// Users/pwhcoder/WebstormProjects/douyinVd/douyin.ts
 var pattern = /"video":{"play_addr":{"uri":"([a-z0-9]+)"/;
 var cVUrl = "https://www.iesdouyin.com/aweme/v1/play/?video_id=%s&ratio=1080p&line=0";
 var statsRegex = /"statistics"\s*:\s*\{([\s\S]*?)\},/;
@@ -17,18 +17,55 @@ function formatDate(date) {
 async function doGet(url) {
   const headers = new Headers();
   headers.set(
-    "User-Agent",
-    "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36"
+      "User-Agent",
+      "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36"
   );
   const resp = await fetch(url, { method: "GET", headers });
   return resp;
 }
+async function parseImgList(body) {
+  const content = body.replace(/\\u002F/g, "/").replace(/\//g, "/");
+  const reg = /{"uri":"[^\s"]+","url_list":\["(https:\/\/p\d{1,2}-sign.douyinpic.com\/.*?)"/g;
+  const urlRet = /"uri":"([^\s"]+)","url_list":/g;
+  let imgMatch;
+  const firstUrls = [];
+  while ((imgMatch = reg.exec(content)) !== null) {
+    firstUrls.push(imgMatch[1]);
+  }
+  let urlMatch;
+  const urlList = [];
+  while ((urlMatch = urlRet.exec(content)) !== null) {
+    urlList.push(urlMatch[1]);
+  }
+  const urlSet = new Set(urlList);
+  const rList = [];
+  for (let urlSetKey of urlSet) {
+    let t = firstUrls.find((item) => {
+      return item.includes(urlSetKey);
+    });
+    if (t) {
+      rList.push(t);
+    }
+  }
+  const filteredRList = rList.filter((url) => !url.includes("/obj/"));
+  console.log("filteredRList.length:", filteredRList.length);
+  return filteredRList;
+}
 async function getVideoInfo(url) {
+  let type = "video";
+  let img_list = [];
+  let video_url = "";
   const resp = await doGet(url);
   const body = await resp.text();
   const match = pattern.exec(body);
-  if (!match || !match[1]) throw new Error("Video ID not found in URL");
-  const video_url = cVUrl.replace("%s", match[1]);
+  if (!match || !match[1]) {
+    type = "img";
+  }
+  if (type == "video") {
+    video_url = cVUrl.replace("%s", match[1]);
+  } else {
+    img_list = await parseImgList(body);
+  }
   const auMatch = body.match(regex);
   const ctMatch = body.match(ctRegex);
   const descMatch = body.match(descRegex);
@@ -52,8 +89,8 @@ async function getVideoInfo(url) {
       desc: null,
       create_time: null,
       video_url,
-      type: "video",
-      image_url_list: null
+      type,
+      image_url_list: img_list
     };
     if (auMatch) {
       douyinVideoInfo.nickname = auMatch[1];
@@ -85,7 +122,7 @@ async function getVideoUrl(url) {
   return downloadUrl;
 }
 
-// home/pwh/jspj/douyinVd/serve.ts
+// Users/pwhcoder/WebstormProjects/douyinVd/serve.ts
 var handler = async (req) => {
   console.log("Method:", req.method);
   const url = new URL(req.url);
@@ -103,7 +140,7 @@ var handler = async (req) => {
   }
 };
 
-// home/pwh/jspj/douyinVd/cfworker.ts
+// Users/pwhcoder/WebstormProjects/douyinVd/cfworker.ts
 var cfworker_default = {
   fetch: handler
 };
